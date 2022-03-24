@@ -1,7 +1,23 @@
-from flask import Flask, Blueprint, render_template, redirect, url_for, request, flash, jsonify
-from flask_login import UserMixin, LoginManager, login_user, login_required, current_user, logout_user
-from sqlalchemy import over, table, select
-from tmdb import  get_trending,get_genres, movie_search, movie_info, get_favorites
+from flask import (
+    Flask,
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    request,
+    flash,
+    jsonify,
+)
+from flask_login import (
+    UserMixin,
+    LoginManager,
+    login_user,
+    login_required,
+    current_user,
+    logout_user,
+)
+from sqlalchemy import false, over, table, select, true
+from tmdb import get_trending, get_genres, movie_search, movie_info, get_favorites
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import over, table, select, update
 from dotenv import find_dotenv, load_dotenv
@@ -16,24 +32,30 @@ import re
 load_dotenv(find_dotenv())
 
 app = Flask(__name__)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-app.config['SECRET_KEY'] = 'secret-key-goes-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
+app.config["SECRET_KEY"] = "secret-key-goes-here"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
-    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["SQLALCHEMY_DATABASE_URI"].replace("postgres://", "postgresql://") 
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ].replace("postgres://", "postgresql://")
 db = SQLAlchemy(app, session_options={"autocommit": True})
 db.init_app(app)
 
 login_manager = LoginManager()
-login_manager.login_view = 'login'
+login_manager.login_view = "login"
 login_manager.init_app(app)
 
+
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
+    id = db.Column(
+        db.Integer, primary_key=True
+    )  # primary keys are required by SQLAlchemy
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
-    
+
+
 class Reviews(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer)
@@ -41,128 +63,109 @@ class Reviews(db.Model):
     user = db.Column(db.String(1000))
     text = db.Column(db.String(1000))
 
+
 class Favorites(db.Model):
-    __tablename__ = 'Favorites'
+    __tablename__ = "Favorites"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100))
     movie = db.Column(db.Integer)
-    
-    def __repr__(self) :
-        return repr(self.movie)
-    
+
+    def __repr__(self):
+        return repr(int(self.movie))
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/login')
-def login():
-    return render_template('home.html')
 
-@app.route('/login', methods=['POST'])
-def login_post():
-    email = request.form.get('name')
-    name = request.form.get('name')
-    password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
+# set up a separate route to serve the index.html file generated
+# by create-react-app/npm run build.
+# By doing this, we make it so you can paste in all your old app routes
+# from Milestone 2 without interfering with the functionality here.
+bp = Blueprint(
+    "bp",
+    __name__,
+    template_folder="./static/react",
+)
+
+@bp.route("/")
+def index():
+    return render_template("index.html")
+
+@bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    print(data)
+    email = data["username"]
+    name = data["username"]
+    password = data["password"]
+    remember = data["remember"]
     
     user = User.query.filter_by(name=name).first()
     if not user:
         user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"error":"User does not exist, please create new account."})
     if not user or not check_password_hash(user.password, password):
-        flash('Username or Password Incorrect')
-        return redirect(url_for('login'))
+        flash("Username or Password Incorrect")
+        return jsonify({"error":"Password is incorrect"})
     login_user(user, remember=remember)
-    return redirect(url_for('search'))
+    return jsonify({"success":"Successfully logged in"})
 
-@app.route('/signup')
-def signup():
-    return render_template('signup.html')
-
-@app.route('/signup', methods=['POST'])
-def signup_post():
-    email = request.form.get('email')
-    name = request.form.get('name')
-    password = request.form.get('password')
+@bp.route("/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    email = data["email"]
+    name = data["username"]
+    password = data["password"]
     
     user = User.query.filter_by(email=email).first()
     if user:
-        flash('Email address already exists')
-        return redirect(url_for('signup'))
-    
+        return jsonify({"error":"User already exists"})    
     new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
     db.session.begin()
     db.session.add(new_user)
     db.session.commit()
     
-    return redirect(url_for('login'))
+    return jsonify({"success":"successfully Registered"})
 
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('login'))
-
-
-@app.route('/')
-def index():
-    return render_template('home.html')
-
-
-@app.route('/profile')
-@login_required
-def profile():
-    return render_template('profile.html', name=current_user.name, id=current_user.id)
-
-@app.route('/favorites', methods=["POST","GET"])
+@bp.route("/favorites", methods=["GET","POST"])
 @login_required
 def favorites():
-    #fav_movies = Favorites.query.filter(Favorites.email.like("%"+current_user.email+"%")).all()
-    #fav_movies = select(Favorites).where(Favorites.email==current_user.email)
     fav_movies = Favorites.query.filter_by(email=current_user.email).all()
     print(fav_movies)
-
-    #showThere = Show.query.filter_by(name = showname).first()
-    
     favs = fav_movies
-    if favs is not None:
+    if favs:
         fav_length = len(favs)
         print(fav_length)
-        #print(favs)
         favorites = get_favorites(favs)
         fav_titles = favorites['fav_titles']
         fav_posters = favorites['fav_posters']
         fav_ids = favorites['fav_ids']
         fav_taglines = favorites['fav_taglines']
+        print(favorites)
         
-        fav_wikiLinks=[]
-        for i in range(len(fav_titles)):
-            links = MediaWiki.get_wiki_link(fav_titles[i])
-        try:
-            fav_wikiLinks.append(links[3][0])#This is the part that has the link to the wikipedia page
-        except:
-            fav_wikiLinks.append("#")#The links get out of order If I don't do this
-            print("Link doesn't exist")
-            
-                
-        return render_template(
-            "favorites.html",
-            fav_length = fav_length,
-            fav_titles = fav_titles,
-            fav_posters = fav_posters,
-            fav_taglines = fav_taglines,
-            fav_ids = fav_ids,
-            fav_wikiLinks = fav_wikiLinks
-        )
-    return render_template("favorites.html")
+        fav_dict={
+            "length" : fav_length,
+            "titles" : fav_titles,
+            "posters" : fav_posters,
+            "taglines" : fav_taglines,
+            "ids" : fav_ids,
+        }    
+        print(fav_dict)
+        return jsonify(fav_dict)   
         
-@app.route('/search', methods=["POST","GET"])
+    return jsonify({"no favorites"})
+        
+@bp.route('/search', methods=["GET"])
 @login_required
 def search():
     data = get_genres()
     movies = get_trending()
     title = 'Trending'    
     if request.method == "POST":
-        query = request.form.get("search")
+        query = request.get_json()
         title = query
         movies = movie_search(query)
                      
@@ -180,59 +183,59 @@ def search():
         except:
             wikiLinks.append("#")#The links get out of order If I don't do this
             print("Link doesn't exist")
-            
-    return render_template(
-        "search.html",
-        title = title,
-        genres = data,
-        titles = titles,
-        overviews = overviews, 
-        posters = posters,
-        taglines = taglines,
-        ids = ids,
-        wikiLinks = wikiLinks,
-        )
-    
-@app.route('/add/<id>', methods=["POST","GET"])
-@login_required
-def addMovie(id):
-    favorites = Favorites.query.filter(Favorites.email.like("%"+current_user.email+"%")).all()
-    if favorites is None:
-        new_movie = Favorites(email=current_user.email, movie=int(id))
-        db.session.begin()
-        db.session.add(new_movie)
-        db.session.commit()
-        return redirect(url_for('favorites'))
-    if id in favorites:
-        flash("Movie is already added")
-        return redirect(url_for('search'))
-    new_movie = Favorites(email=current_user.email, movie=int(id))
-    db.session.begin()
-    db.session.add(new_movie)
-    db.session.commit()
-    flash("Movie added to Favorites!")
-    return redirect(url_for('favorites'))
+    search_dict={
+        "title" : title,
+        "genres" : data,
+        "titles" : titles,
+        "overviews" : overviews, 
+        "posters" : posters,
+        "taglines" : taglines,
+        "ids" : ids,
+        "wikiLinks" : wikiLinks,
+    }   
+    return jsonify(search_dict)
 
-@app.route('/remove/<id>', methods=["POST","GET"])
+@bp.route('/search/<query>', methods=["GET"])
 @login_required
-def removeMovie(id):
-    favorites = Favorites.query.filter_by(email=current_user.email,movie=id).first()
-    if favorites is None:
-        return redirect(url_for('favorites'))
-    db.session.begin()
-    db.session.delete(favorites)
-    db.session.commit()
-    flash("Movie removed!")
-    return redirect(url_for('favorites'))
+def searchResult(query):
+    data = get_genres()
+    title = query
+    movies = movie_search(query)
+                     
+    titles = movies['titles']
+    overviews = movies['overviews']
+    posters = movies['posters']
+    ids = movies['ids']
+    taglines = movies['taglines']
     
-    
-    
-@app.route('/movie/<id>', methods=["POST","GET"])
+    wikiLinks=[]
+    for i in range(len(titles)):
+        links = MediaWiki.get_wiki_link(titles[i])
+        try:
+            wikiLinks.append(links[3][0])#This is the part that has the link to the wikipedia page
+        except:
+            wikiLinks.append("#")#The links get out of order If I don't do this
+            print("Link doesn't exist")
+    search_dict={
+        "title" : title,
+        "genres" : data,
+        "titles" : titles,
+        "overviews" : overviews, 
+        "posters" : posters,
+        "taglines" : taglines,
+        "ids" : ids,
+        "wikiLinks" : wikiLinks,
+    }   
+    return jsonify(search_dict)
+
+@bp.route('/movie/<id>', methods=["POST","GET"])
+@login_required
 def viewMovie(id):
-    (title, genres, poster, tagline, overview, release_date) = movie_info(id)
+    (title, genres, poster, tagline, overview, release_date, lil_poster) = movie_info(id)
     if request.method == "POST":
-        rating = request.form.get("rating")
-        textReview = request.form.get("textReview")
+        data = request.get_json()
+        rating = data["rating"]
+        textReview = data["textReview"]
         new_rating = Reviews(movie_id=int(id), user=current_user.name, rating=rating, text=textReview)
         db.session.begin()
         db.session.add(new_rating)
@@ -249,65 +252,110 @@ def viewMovie(id):
             users.append(i.__dict__.get('user'))
             ratings.append(i.__dict__.get('rating'))
             texts.append(i.__dict__.get('text'))
-        return render_template(
-            "viewMovie.html",
-            title = title,
-            genres = genres,
-            poster = poster, 
-            tagline = tagline,
-            overview = overview,
-            release_date = release_date, 
-            id=id,
-            user=users, 
-            rating=ratings,
-            text=texts,
-            reviews=1,
-            rev_length=len(ratings),
-        )
-       
-    return render_template(
-        "viewMovie.html",
-         title = title,
-         genres = genres,
-         poster = poster, 
-         tagline = tagline,
-         overview = overview,
-         release_date = release_date, 
-         id=id
-        )
-app.run()
+        viewMovie_dict={
+            "current_user": current_user.name,
+            "title" : title,
+            "genres" : genres,
+            "poster" : poster, 
+            "tagline" : tagline,
+            "overview" : overview,
+            "release_date" : release_date, 
+            "id" : id,
+            "user":users, 
+            "rating":ratings,
+            "text":texts,
+            "reviews":"true",
+            "rev_length":len(ratings),
+        }
+        return jsonify(viewMovie_dict)
+    viewMovie_dict={
+        "current_user": current_user.name,
+        "title" : title,
+        "genres" : genres,
+        "poster" : poster, 
+        "tagline" : tagline,
+        "overview" : overview,
+        "release_date" : release_date, 
+        "id" : id,
+        "reviews":"false"
+    }   
+    return jsonify(viewMovie_dict)
 
+@bp.route('/add/<id>', methods=["POST","GET"])
+@login_required
+def addMovie(id):
+    favorites = Favorites.query.filter(Favorites.email.like("%"+current_user.email+"%")).all()
+    print(favorites)
+    if favorites is None:
+        new_movie = Favorites(email=current_user.email, movie=int(id))
+        db.session.begin()
+        db.session.add(new_movie)
+        db.session.commit()
+    if id in favorites:
+        return(jsonify("Movie is already added"))
+    new_movie = Favorites(email=current_user.email, movie=int(id))
+    db.session.begin()
+    db.session.add(new_movie)
+    db.session.commit()
+    return(jsonify("Movie is added"))
 
+@bp.route('/remove/<id>', methods=["POST","GET"])
+@login_required
+def removeMovie(id):
+    favorites = Favorites.query.filter_by(email=current_user.email,movie=id).first()
+    if favorites is None:
+        return (jsonify("Not in Favorites"))
+    db.session.begin()
+    db.session.delete(favorites)
+    db.session.commit()
+    return (jsonify("Removed from Favorites"))
 
+@bp.route('/reviewbbgurl', methods=["GET"])
+@login_required
+def gimme_my_reviews():
+    name = current_user.name
+    reviews = Reviews.query.filter_by(user=name).all()
+    if reviews:
+        my_reviews=[]
+        ratings=[]
+        texts=[]
+        movie_ids=[]
+        movies={}
+        for i in reviews:
+            print (i.__dict__)
+            my_reviews.append(i.__dict__.get('id'))
+            ratings.append(i.__dict__.get('rating'))
+            texts.append(i.__dict__.get('text'))
+            movie_ids.append(i.__dict__.get('movie_id'))
+            (title, genres, poster, tagline, overview, release_date, lil_poster) = movie_info(i.__dict__.get('movie_id'))
+            movies[i.__dict__.get('movie_id')] = (title, lil_poster)
+        view_ratings_dicts = {
+            "review_ids": my_reviews,
+            "current_user": current_user.name,
+            "texts": texts, 
+            "ratings": ratings,
+            "movies": movies,
+            "movie_ids": movie_ids, 
+            "length":len(ratings)
+        }
+        return jsonify(view_ratings_dicts)
+    return jsonify({"error":"you got no comments bro"})
 
+@bp.route('/delete_comment/<e>', methods=["GET"])
+def remove_that_review(e):
+    reviews = Reviews.query.filter_by(id=e).first()
+    if reviews is None:
+        return (jsonify("Review does not exist"))
+    db.session.begin()
+    db.session.delete(reviews)
+    db.session.commit()
+    return (jsonify("Removed from Reviews"))
+    
 
-# set up a separate route to serve the index.html file generated
-# by create-react-app/npm run build.
-# By doing this, we make it so you can paste in all your old app routes
-# from Milestone 2 without interfering with the functionality here.
-bp = Blueprint(
-    "bp",
-    __name__,
-    template_folder="./static/react",
-)
-
-# route for serving React page
-@bp.route("/")
-def index():
-    # NB: DO NOT add an "index.html" file in your normal templates folder
-    # Flask will stop serving this React page correctly
-    return render_template("index.html")
-
-
-@bp.route("/funfact")
-def funfact():
-    facts = [
-        "Three presidents, all Founding Fathers—John Adams, Thomas Jefferson, and James Monroe—died on July 4. Presidents Adams and Jefferson also died the same year, 1826; President Monroe died in 1831.",
-        "The heart of the blue whale, the largest animal on earth, is five feet long and weighs 400 pounds.",
-        "The word “strengths” is the longest word in the English language with only one vowel.",
-    ]
-    return jsonify(facts)
-
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
 
 app.register_blueprint(bp)
 

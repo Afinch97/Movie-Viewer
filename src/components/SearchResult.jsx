@@ -37,7 +37,7 @@ const SearchResult = () =>  {
         items.push(
             <div class='item'>
                 <p><h2>({i+1}) {titles[i] }</h2>
-                <Link to={`/${ids[i]}`}><input type="submit" value="More info"/></Link>
+                <Link to={`/info/${ids[i]}`}><input type="submit" value="More info"/></Link>
                 </p>
                 <img src={String(posters[i])} />
                 <p>{ taglines[i] }</p>

@@ -5,8 +5,6 @@ import "./styleMovie.css";
 const Movie = () => {
     const { movieId } = useParams();
     console.log({movieId})
-    let url = window.location.pathname
-    const[justTesting, setJustTestint]= useState({})
     const[areReviews, setAreReviews] = useState(false)
     const[genres, setGenres] = useState([])
     const [title, setTitle] = useState("")
@@ -28,7 +26,6 @@ const Movie = () => {
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                setJustTestint(data)
                 setTitle(data.title)
                 setId(data.id)
                 setPoster(data.poster)
@@ -50,7 +47,7 @@ const Movie = () => {
             });        
     };
     useEffect(() => getRepo(), []);
-    console.log(justTesting, areReviews, genres, title, id, poster, tagline, overview, releaseDate, user, rating, text, reviewLength)
+    console.log(areReviews, genres, title, id, poster, tagline, overview, releaseDate, user, rating, text, reviewLength)
     console.log(reviewLength)
     const reviews = []
     if (areReviews === true){
