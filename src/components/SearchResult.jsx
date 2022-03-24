@@ -4,13 +4,11 @@ import "./searchStyle.css";
 
 const SearchResult = () =>  {
     let { query } = useParams();
-    let url = window.location.pathname
     const [title, setTitle] = useState("")
     const [ids, setIds] = useState([])
     const [posters, setPosters] = useState([])
     const [taglines, setTaglines] = useState([])
     const [titles, setTitles] = useState([])
-    const [fav, setFav ] = useState()
     const items= [];
     const getRepo = async () =>{
         await fetch(`/search/${query}`)
