@@ -14,6 +14,7 @@ Here's a list:
     - So to fix this I had to convert the "object" to a string and then convert that into int. Literally (int(str(favs[i]))) fixed it
 
 
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
@@ -21,6 +22,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 In the project directory, you can run:
 
 ### `npm start`
+
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
