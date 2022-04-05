@@ -10,11 +10,9 @@ const Search = () =>  {
     const [titles, setTitles] = useState([])
     const items= [];
     const getRepo = async () =>{
-        await fetch('/search')
+        await fetch('/flask/search')
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                console.log(data.ids)
                 setTitle(data.title)
                 setIds(data.ids)
                 setPosters(data.posters)
@@ -23,27 +21,29 @@ const Search = () =>  {
 
             });        
     };
-    useEffect(() => getRepo(), []);
+    useEffect(() => {
+        getRepo()
+    }, []);
     console.log(title, ids, titles, posters, taglines)
+    if(titles.length !== 0){
+        for (let i = 0; i < 10; i++) {
+            items.push(
+                <div class='item'>
+                    <p><h2>({i+1}) {titles[i] }</h2>
+                    <Link to={`/info/${ids[i]}`}><input type="submit" value="More info"/></Link>
+                    </p>
+                    <img src={String(posters[i])} />
+                    <p>{ taglines[i] }</p>
+                    {console.log(ids[i])}
+                    <button onClick={() => Add(ids[i])}>Add to Favorites</button>
+                </div>
+            )
+            }
+    }
     const Add = (e) =>{
         e.preventDefault();
         fetch(`/add/${e}`)
     };
-
-    for (let i = 0; i < 10; i++) {
-        items.push(
-            <div class='item'>
-                <p><h2>({i+1}) {titles[i] }</h2>
-                <Link to={`/info/${ids[i]}`}><input type="submit" value="More info"/></Link>
-                </p>
-                <img src={String(posters[i])} />
-                <p>{ taglines[i] }</p>
-                {console.log(ids[i])}
-                <button onClick={() => Add(ids[i])}>Add to Favorites</button>
-            </div>
-        )
-
-    }
      return (
         <>
         <h1>{title} Movies</h1>

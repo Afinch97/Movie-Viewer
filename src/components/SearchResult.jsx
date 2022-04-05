@@ -11,7 +11,7 @@ const SearchResult = () =>  {
     const [titles, setTitles] = useState([])
     const items= [];
     const getRepo = async () =>{
-        await fetch(`/search/${query}`)
+        await fetch(`/flask/search/${query}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);

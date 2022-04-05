@@ -90,7 +90,17 @@ bp = Blueprint(
 )
 
 @bp.route("/")
+@bp.route('/register')
+@bp.route('/search')
+@bp.route('/favs')
+@bp.route('/myComments')
 def index():
+    return render_template("index.html")
+
+@bp.route('/search/<query>')
+@bp.route('/info/<query>')
+@bp.route('/<query>')
+def refresh(query):
     return render_template("index.html")
 
 @bp.route("/login", methods=["POST"])
@@ -158,7 +168,7 @@ def favorites():
         
     return jsonify({"no favorites"})
         
-@bp.route('/search', methods=["GET"])
+@bp.route('/flask/search', methods=["GET"])
 @login_required
 def search():
     data = get_genres()
@@ -195,7 +205,7 @@ def search():
     }   
     return jsonify(search_dict)
 
-@bp.route('/search/<query>', methods=["GET"])
+@bp.route('/flask/search/<query>', methods=["GET"])
 @login_required
 def searchResult(query):
     data = get_genres()
@@ -310,7 +320,7 @@ def removeMovie(id):
     db.session.commit()
     return (jsonify("Removed from Favorites"))
 
-@bp.route('/reviewbbgurl', methods=["GET"])
+@bp.route('/flask/reviews', methods=["GET"])
 @login_required
 def gimme_my_reviews():
     name = current_user.name

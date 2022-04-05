@@ -15,7 +15,7 @@ const Home = ()=>{
                     var key = Object.keys(json)
                     console.log(key[0])
                     if(key[0]==="success"){
-                        navigate("/searchy");
+                        navigate("/search");
                     }
                     else if(key[0]==="error"){
                         console.log(Object.values(json))

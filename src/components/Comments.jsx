@@ -6,7 +6,7 @@ const Comments = () => {
     console.log(commentInfo)
     const items = []
     const MyComments = () => {
-        fetch(`/reviewbbgurl`)
+        fetch(`/flask/reviews`)
         .then(response => response.json())
                 .then(data => {
                     console.log(data)

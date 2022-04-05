@@ -11,12 +11,11 @@ const NavBar = () => {
   }
   const Submit = (e)  => {
     e.preventDefault();
-    //navigate(`/searchy/${term}`)
-    window.location = `/searchy/${term}`;
+    window.location = `/search/${term}`;
 }
   return (
     <div class="topnav" id="myTopNav">
-        <NavLink to={"/searchy"} ><a>Home</a></NavLink>
+        <NavLink to={"/search"} ><a>Home</a></NavLink>
         <a href="https://github.com/Afinch97/Milestone-3-SE" target="_blank">About</a>
         <NavLink to={"/favs"}><a>Favorites</a></NavLink>
         <NavLink to={"/myComments"}><a>Comments</a></NavLink>

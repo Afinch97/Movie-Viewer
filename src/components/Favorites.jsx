@@ -15,7 +15,7 @@ const Favorites = () =>  {
     const items= [];
     const getRepo = async () =>{
         console.log("fetching")
-        await fetch(`/favorites`)
+        await fetch(`/flask/favorites`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
