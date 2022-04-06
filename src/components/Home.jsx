@@ -30,7 +30,7 @@ const Home = ()=>{
         
         return (
             <>
-            <h1><RiMovie2Line size={"2.5em"}/>Movie Viewer</h1>
+            <h1><RiMovie2Line size={"2.5em"}/>Finch Flix</h1>
             <div className="inner">
             <Form onSubmit={Submit}>
                 <h3>Log In</h3>

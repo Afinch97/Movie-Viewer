@@ -28,7 +28,7 @@ const handleSelect = (eventKey) => {
       <Navbar.Brand href="/search">
         <RiMovie2Line width="30" height="30" className='d-inline-block align-top'
         />{' '}
-        Movie View
+        Finch Flix
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="navbarScroll" />
       <Navbar.Collapse id="navbarScroll">
