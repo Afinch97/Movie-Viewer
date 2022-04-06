@@ -15,6 +15,7 @@ const Comments = () => {
     }
     useEffect(() => MyComments(), []);
     console.log(commentInfo)
+    var key = Object.keys(commentInfo)
     const DeleteComment = (e,b) => {
         console.log("Before \n",commentInfo)
         let temp3 = commentInfo
@@ -47,9 +48,16 @@ const Comments = () => {
         )
     }
   return (
-    <div>Reviews 
+    <>
+    <h1>Reviews</h1> 
+    {key[0]==="error" && 
+    <>
+    <h1>No Reviews</h1>
+    <center><span>Go make some reviews!</span></center>
+    </>
+    }
         {items}
-    </div>
+    </>
   )
 }
 

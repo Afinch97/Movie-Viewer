@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "./searchStyle.css";
+import image from "./NoFavs.jpg";
 
 const Favorites = () =>  {
-    const [title, setTitle] = useState("Favorite")
+    const title = "Favorite"
     const [ids, setIds] = useState([])
     const [posters, setPosters] = useState([])
     const [taglines, setTaglines] = useState([])
     const [titles, setTitles] = useState([])
-    const [length, setLength] = useState()
+    const [length, setLength] = useState(0)
     const [test, setTest] = useState({})
     const [there, setThere] = useState(false)
-    const [fav, setFav ] = useState()
     const items= [];
     const getRepo = async () =>{
         console.log("fetching")
@@ -25,10 +25,13 @@ const Favorites = () =>  {
                 setPosters(data.posters)
                 setTaglines(data.taglines)
                 setTitles(data.titles)
-                setThere(true)
             });        
     };
     useEffect(() => getRepo(), []);
+    console.log(length)
+    if (length !== 0){
+        setThere(true)
+    }
     if (there === true){
         console.log(test)
         console.log(title, ids, titles, posters, taglines, length)
@@ -52,10 +55,16 @@ const Favorites = () =>  {
             </div>
         )
     }
-    console.log(fav)
      return (
         <>
         <h1>{title} Movies</h1>
+        {there === false && 
+            <center>
+                <img src={image} alt=''/>
+                <br />
+                <h1>Go add some movies!</h1>
+            </center>
+        }
         <div class='container'>
             {items}
         </div>

@@ -16,7 +16,7 @@ const Movie = () => {
     const [user, setUser] = useState([])
     const [rating, setRating] = useState([])
     const [text, setText] = useState([])
-    const [reviewLength, setReviewLength] = useState()
+    const [reviewLength, setReviewLength] = useState(0)
     const [startForm, setStartForm] = useState("Be the first to write a review:")
     const [inputs, setInputs] = useState({})
     const [current_user, setCurrent_user] = useState("")
@@ -96,7 +96,7 @@ const Movie = () => {
     </form>
     <div class="movieInfo">
         <div class="poster">
-            <img src={poster} />
+            <img src={poster} alt=""/>
         </div>
         <div class="details">
             <div class="title">{title}</div> {releaseDate}<br/>

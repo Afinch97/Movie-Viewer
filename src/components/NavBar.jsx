@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import "./NavBar.css"
-import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Navbar, Nav,Form, FormControl, Button } from "react-bootstrap";
+import { RiMovie2Line } from 'react-icons/ri';
+import { Container } from '@mui/material';
+
 
 const NavBar = () => {
   const [term, setTerm] = useState("")
@@ -13,20 +17,53 @@ const NavBar = () => {
     e.preventDefault();
     window.location = `/search/${term}`;
 }
+const handleSelect = (eventKey) => {
+  console.log(eventKey)
+  navigate(eventKey);
+}
   return (
-    <div class="topnav" id="myTopNav">
-        <NavLink to={"/search"} ><a>Home</a></NavLink>
-        <a href="https://github.com/Afinch97/Milestone-3-SE" target="_blank">About</a>
-        <NavLink to={"/favs"}><a>Favorites</a></NavLink>
-        <NavLink to={"/myComments"}><a>Comments</a></NavLink>
-        <div class="search-container">
-            <form onSubmit={Submit}>
-                <input type="text" placeholder="Search..." name="search"onChange={e =>setTerm(e.target.value)} value={term}></input>
-                <button type="submit"><i class="fa fa-search"></i></button>
-            </form>
-        </div>
-        <a onClick={logout} class="Logout">Logout</a>
-    </div>
+    <>
+    <Navbar bg="light" expand="lg">
+    <Container fluid>
+      <Navbar.Brand href="/search">
+        <RiMovie2Line width="30" height="30" className='d-inline-block align-top'
+        />{' '}
+        Movie View
+      </Navbar.Brand>
+      <Navbar.Toggle aria-controls="navbarScroll" />
+      <Navbar.Collapse id="navbarScroll">
+      <Nav variant="pills" defaultActiveKey="/home"  onSelect={handleSelect} className="me-auto my-2 my-lg-0"
+        style={{ maxHeight: '100px' }}
+        navbarScroll>
+          <Nav.Item>
+            <Nav.Link eventKey="/search">Home</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="" href="https://github.com/Afinch97/Movie-Viewer" target="_blank" rel="noreferrer">About</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="/favs">Favorites</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="/myComments">Comments</Nav.Link>
+          </Nav.Item>
+        </Nav>
+        <Form className="d-flex" onSubmit={Submit}>
+        <FormControl
+          type="search"
+          placeholder="Search"
+          className="me-2"
+          aria-label="Search"
+          onChange={e =>setTerm(e.target.value)} 
+          value={term}
+        />
+        <Button variant="outline-success" type="submit">Search</Button>
+      </Form>
+      <Button variant="danger" onClick={logout}>Logout</Button>
+      </Navbar.Collapse>
+    </Container>
+    </Navbar>
+    </>
   )
 }
 
