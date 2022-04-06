@@ -42,7 +42,6 @@ const Search = () =>  {
             }
     }
     const Add = (e) =>{
-        e.preventDefault();
         fetch(`/add/${e}`)
     };
      return (
