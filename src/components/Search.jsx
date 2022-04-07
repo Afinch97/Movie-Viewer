@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
-import "./searchStyle.css";
 import { Button,  Alert } from 'react-bootstrap';
+import "./searchStyle.css";
 
 const Search = () =>  {
     const [title, setTitle] = useState("")
@@ -35,7 +35,7 @@ const Search = () =>  {
     }, []);
     //console.log(title, ids, titles, posters, taglines)
     if(titles.length !== 0){
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < titles.length; i++) {
             items.push(
                 <div class='item'>
                     <p><h3><strong>({i+1}) {titles[i] }</strong></h3>

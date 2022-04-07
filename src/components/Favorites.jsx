@@ -56,7 +56,8 @@ const Favorites = () =>  {
         console.log("Variables after deletion: ",title, ids, titles, posters, taglines, length)
     }
 
-    for (let i = 0; i < length; i++) {
+    if(there){
+        for (let i = 0; i < length; i++) {
         items.push(
             <div class='item'>
                 <p><h2>({i+1}) {titles[i] }</h2>
@@ -68,7 +69,7 @@ const Favorites = () =>  {
                     <Button variant="danger" onClick={() => Delete(ids[i],i)}>Remove from Favorites</Button>
             </div>
         )
-    }
+    }}
      return (
         <>
         <h1>{title} Movies</h1>
