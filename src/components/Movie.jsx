@@ -55,10 +55,6 @@ const Movie = () => {
             reviews.push(
                 <>
                 <div class="name_and_rating">
-                    {console.log(user)}
-                    {console.log(rating)}
-                    {console.log(user[i])}
-                    {console.log(rating[i])}
                     <h3>{user[i]}: {rating[i]}</h3>
                 </div>
                 <div class="review_text">
@@ -74,6 +70,9 @@ const Movie = () => {
         setRating(oldrating => [...oldrating, inputs.rating])
         setText(oldtext => [...oldtext, inputs.textReview ])
         setReviewLength(reviewLength + 1)
+        if(areReviews===false){
+            setAreReviews(true)
+        }
         reviews.push(
             <>
                 <div class="name_and_rating">

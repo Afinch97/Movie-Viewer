@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Spinner from 'react-bootstrap/Spinner';
 import "./searchStyle.css";
-import { Button,  Alert } from 'react-bootstrap';
+import { Button,  Alert, Card } from 'react-bootstrap';
 
-const Search = () =>  {
+const Searchv2 = () =>  {
     const [title, setTitle] = useState("")
     const [ids, setIds] = useState([])
     const [posters, setPosters] = useState([])
@@ -16,7 +16,7 @@ const Search = () =>  {
     const items= [];
     const getRepo = async () =>{
         let information = {}
-        await fetch('/flask/search')
+        await fetch('/flask/searchv2')
             .then(response => response.json())
             .then(data => {
                 information = data
@@ -30,20 +30,22 @@ const Search = () =>  {
         console.log("Info Set")
         console.log("Information Object: ",information)
     };
-    useEffect(() => {
-        getRepo()
-    }, []);
-    //console.log(title, ids, titles, posters, taglines)
+    useEffect(() => {getRepo()}, []);
     if(titles.length !== 0){
         for (let i = 0; i < 10; i++) {
             items.push(
                 <div class='item'>
-                    <p><h3><strong>({i+1}) {titles[i] }</strong></h3>
-                    <Link className="btn btn-secondary btn-sm" role="button" to={`/info/${ids[i]}`}>More Info</Link>
-                    </p>
-                    <img src={String(posters[i])} alt=""/>
-                    <p>{ taglines[i] }</p>
+                <Card style={{ width: '345px' }}>
+                    <Card.Header><strong>{titles[i]}</strong></Card.Header>
+                    <Card.Img variant="top" src={String(posters[i])} styie={{padding: '4px'}} />
+                    <Card.Body>
+                        <Card.Text>{taglines[i]}</Card.Text>
+                    </Card.Body>
+                    <Card.Body>
+                        <Link className="btn btn-secondary" role="button" to={`/info/${ids[i]}`}>More Info</Link>{' '}
                         <Button variant="success" onClick={() => {Add(ids[i],titles[i]);}}>Add to Favorites</Button>
+                    </Card.Body>
+                </Card>
                 </div>
             )
             }
@@ -80,4 +82,4 @@ const Search = () =>  {
     )
 }
 
-export default Search
+export default Searchv2

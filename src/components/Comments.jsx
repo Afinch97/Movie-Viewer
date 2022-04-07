@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
 
 const Comments = () => {
     const[commentInfo, setCommentInfo] = useState({})
@@ -16,23 +15,16 @@ const Comments = () => {
     useEffect(() => MyComments(), []);
     console.log(commentInfo)
     var key = Object.keys(commentInfo)
-    const DeleteComment = (e,b) => {
+    const DeleteComment = (e,index) => {
         console.log("Before \n",commentInfo)
-        let temp3 = commentInfo
-        if(b !== -1){
-            console.log(items)
-            temp3.movie_ids.splice(b,1)
-            temp3.ratings.splice(b,1)
-            temp3.texts.splice(b,1)
-            items.splice(b,1)
-            temp3.length = temp3.length -1
-            setCommentInfo(temp3)
-            console.log("After\n",commentInfo)
-            console.log(items)
-        }
-        console.log("After\n",commentInfo)
-        console.log(items)
+        setCommentInfo({
+            length:(commentInfo.length-1),
+            movie_ids:(commentInfo.movie_ids.filter((x,i) => i !== index)),
+            ratings:(commentInfo.ratings.filter((x,i) => i !== index)),
+            texts:(commentInfo.texts.filter((x,i) => i !== index))
+        })
         fetch(`/delete_comment/${e}`)
+        console.log("After\n",commentInfo)
         
     }
     console.log("After\n",commentInfo)
@@ -50,7 +42,7 @@ const Comments = () => {
   return (
     <>
     <h1>Reviews</h1> 
-    {key[0]==="error" && 
+    {(key[0]==="error" || commentInfo.length===0) && 
     <>
     <h1>No Reviews</h1>
     <center><span>Go make some reviews!</span></center>

@@ -17,7 +17,14 @@ from flask_login import (
     logout_user,
 )
 from sqlalchemy import false, over, table, select, true
-from tmdb import get_trending, get_genres, movie_search, movie_info, get_favorites
+from tmdb import (
+    get_trending,
+    get_trendingv2,
+    get_genres,
+    movie_search,
+    movie_info,
+    get_favorites,
+)
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import over, table, select, update
 from dotenv import find_dotenv, load_dotenv
@@ -39,6 +46,7 @@ if app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgres://"):
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config[
         "SQLALCHEMY_DATABASE_URI"
     ].replace("postgres://", "postgresql://")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 db = SQLAlchemy(app, session_options={"autocommit": True})
 db.init_app(app)
 
@@ -186,6 +194,41 @@ def favorites():
 def search():
     data = get_genres()
     movies = get_trending()
+    title = "Trending"
+    titles = movies["titles"]
+    overviews = movies["overviews"]
+    posters = movies["posters"]
+    ids = movies["ids"]
+    taglines = movies["taglines"]
+
+    wikiLinks = []
+    for i in range(len(titles)):
+        links = MediaWiki.get_wiki_link(titles[i])
+        try:
+            wikiLinks.append(
+                links[3][0]
+            )  # This is the part that has the link to the wikipedia page
+        except:
+            wikiLinks.append("#")  # The links get out of order If I don't do this
+            print("Link doesn't exist")
+    search_dict = {
+        "title": title,
+        "genres": data,
+        "titles": titles,
+        "overviews": overviews,
+        "posters": posters,
+        "taglines": taglines,
+        "ids": ids,
+        "wikiLinks": wikiLinks,
+    }
+    return jsonify(search_dict)
+
+
+@bp.route("/flask/searchv2", methods=["GET"])
+@login_required
+def searchv2():
+    data = get_genres()
+    movies = get_trendingv2()
     title = "Trending"
     titles = movies["titles"]
     overviews = movies["overviews"]

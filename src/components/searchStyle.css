@@ -64,3 +64,10 @@ form {
     text-align: center;
     size: 10em;
 }
+
+.card-img-top {
+    width: 315px;
+    padding: 10px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
