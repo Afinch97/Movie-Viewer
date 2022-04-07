@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import "./NavBar.css"
-import { useNavigate } from 'react-router-dom';
-import { Navbar, Nav,Form, FormControl, Button } from "react-bootstrap";
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Navbar, Nav,Form, FormControl, Button, Container } from "react-bootstrap";
 import { RiMovie2Line } from 'react-icons/ri';
-import { Container } from '@mui/material';
 
 
 const NavBar = () => {
   const [term, setTerm] = useState("")
   let navigate = useNavigate();
+  let location = useLocation()
   const logout = () =>{
     fetch('/logout')
     window.location = '/';
@@ -32,9 +32,9 @@ const handleSelect = (eventKey) => {
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="navbarScroll" />
       <Navbar.Collapse id="navbarScroll">
-      <Nav variant="pills" defaultActiveKey="/home"  onSelect={handleSelect} className="me-auto my-2 my-lg-0"
+      <Nav variant="pills" defaultActiveKey={location.pathname}  onSelect={handleSelect} className="me-auto my-2 my-lg-0"
         style={{ maxHeight: '100px' }}
-        navbarScroll>
+        navbarScroll >
           <Nav.Item>
             <Nav.Link eventKey="/search">Home</Nav.Link>
           </Nav.Item>
@@ -59,6 +59,7 @@ const handleSelect = (eventKey) => {
         />
         <Button variant="outline-success" type="submit">Search</Button>
       </Form>
+      {' '}
       <Button variant="danger" onClick={logout}>Logout</Button>
       </Navbar.Collapse>
     </Container>

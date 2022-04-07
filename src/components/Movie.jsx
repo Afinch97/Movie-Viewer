@@ -1,5 +1,7 @@
 import React,{ useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button, Alert } from 'react-bootstrap';
+import Spinner from 'react-bootstrap/Spinner';
 import "./styleMovie.css";
 
 const Movie = () => {
@@ -20,6 +22,11 @@ const Movie = () => {
     const [startForm, setStartForm] = useState("Be the first to write a review:")
     const [inputs, setInputs] = useState({})
     const [current_user, setCurrent_user] = useState("")
+    const [show, setShow] = useState(false);
+    const [alert, setAlert] = useState();
+    const [isLoaded, setIsLoaded] = useState(false)
+
+    
 
     const getRepo = async () =>{
         await fetch(`/movie/${movieId}`)
@@ -35,6 +42,7 @@ const Movie = () => {
                 setReleaseDate(data.release_date)
                 setGenres(data.genres)
                 setCurrent_user(data.current_user)
+                setIsLoaded(true)
                 if(data.reviews === "true"){
                     setAreReviews(true)
                     setUser(data.user)
@@ -86,13 +94,31 @@ const Movie = () => {
         fetch(`/movie/${movieId}`, { method: 'POST', headers:{'Content-Type':'application/json'} ,body: JSON.stringify(inputs) })
         
     }
+    const Add = (e,title) =>{
+        console.log(title)
+        setShow(true)
+        setAlert(
+            <>
+            <Alert variant="success" onClose={() => setShow(false)} dismissible style={{"margin-left":"auto", "margin-right":"auto"}}>
+                <Alert.Heading>{title} added to favorites!</Alert.Heading>
+            </Alert>
+            </>
+        );
+        fetch(`/add/${e}`)
+    };
 
     return (
     <>
     <h2>{title}</h2>
-    <form action="/add/{{id}}">
-        <input type="submit" value="Add to Favorites"/>
-    </form>
+    {show && 
+            alert
+        }
+    {isLoaded === false &&
+        <div className='d-flex justify-content-center'>
+        <Spinner animation="border" variant="info" style={{ width: '6rem', height: '6rem' }}/>
+        </div>
+    }
+    <Button variant="success" onClick={() => {Add(id,title);}}>Add to Favorites</Button>
     <div class="movieInfo">
         <div class="poster">
             <img src={poster} alt=""/>
