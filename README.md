@@ -8,4 +8,4 @@ Movie viewer was made with react on the frontend, and flask processing informati
 
 Made using the TMDB api. [Link to Documentation](https://developers.themoviedb.org/3/getting-started/introduction/)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app)
