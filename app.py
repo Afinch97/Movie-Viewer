@@ -22,6 +22,7 @@ from tmdb import (
     get_trendingv2,
     get_genres,
     movie_search,
+    movie_searchv2,
     movie_info,
     get_favorites,
 )
@@ -265,6 +266,42 @@ def searchResult(query):
     data = get_genres()
     title = query
     movies = movie_search(query)
+
+    titles = movies["titles"]
+    overviews = movies["overviews"]
+    posters = movies["posters"]
+    ids = movies["ids"]
+    taglines = movies["taglines"]
+
+    wikiLinks = []
+    for i in range(len(titles)):
+        links = MediaWiki.get_wiki_link(titles[i])
+        try:
+            wikiLinks.append(
+                links[3][0]
+            )  # This is the part that has the link to the wikipedia page
+        except:
+            wikiLinks.append("#")  # The links get out of order If I don't do this
+            print("Link doesn't exist")
+    search_dict = {
+        "title": title,
+        "genres": data,
+        "titles": titles,
+        "overviews": overviews,
+        "posters": posters,
+        "taglines": taglines,
+        "ids": ids,
+        "wikiLinks": wikiLinks,
+    }
+    return jsonify(search_dict)
+
+
+@bp.route("/flask/searchv2/<query>", methods=["GET"])
+@login_required
+def searchResult(query):
+    data = get_genres()
+    title = query
+    movies = movie_searchv2(query)
 
     titles = movies["titles"]
     overviews = movies["overviews"]
